@@ -14,7 +14,8 @@ exports.needs = nest({
   'message.html.confirm': 'first',
   'drafts.sync.get': 'first',
   'drafts.sync.set': 'first',
-  'drafts.sync.remove': 'first'
+  'drafts.sync.remove': 'first',
+  'sbot.async.get': 'first'
 })
 
 exports.create = function (api) {
@@ -144,6 +145,30 @@ exports.create = function (api) {
       warning,
       actions
     ])
+
+
+    composer.addQuote = function (value) {
+      console.log(value)
+      api.sbot.async.get(value.key, (err, data) => {
+        if (err) {
+          console.log('Error getting an object from sbot', err)
+          return;
+        }
+        try {
+          if (typeof data.content.text === 'string') {
+            var text = data.content.text
+            textArea.value += '> ' + text.replace(/\r\n|\r|\n/g,'\n> ') + '\r\n\n'
+            hasContent.set(!!textArea.value)
+          }
+        } catch(err) {
+          // object not have text or content
+        }
+      });
+    }
+
+    //ADD QUOTE
+    //I need to know if you pressed the "Quote" button to get here.
+    composer.addQuote(draftLocation)
 
     addSuggest(channelInput, (inputText, cb) => {
       if (inputText[0] === '#') {
